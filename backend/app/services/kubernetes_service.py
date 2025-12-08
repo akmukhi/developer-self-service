@@ -236,6 +236,36 @@ class KubernetesService:
         except ApiException as e:
             raise Exception(f"Failed to list deployments: {e.reason}")
 
+    def trigger_rolling_update(self, name: str, namespace: str = "default") -> bool:
+        """Trigger a rolling update for a deployment by updating restart annotation"""
+        self.ensure_connected()
+        
+        try:
+            deployment = self._apps_v1.read_namespaced_deployment(name=name, namespace=namespace)
+            
+            # Update annotation to trigger rolling restart
+            if not deployment.spec.template.metadata.annotations:
+                deployment.spec.template.metadata.annotations = {}
+            
+            from datetime import datetime
+            deployment.spec.template.metadata.annotations[
+                "kubectl.kubernetes.io/restartedAt"
+            ] = datetime.utcnow().isoformat()
+            
+            # Patch the deployment
+            self._apps_v1.patch_namespaced_deployment(
+                name=name,
+                namespace=namespace,
+                body=deployment
+            )
+            
+            logger.info(f"Triggered rolling update for deployment {name} in namespace {namespace}")
+            return True
+        except ApiException as e:
+            if e.status == 404:
+                raise Exception(f"Deployment {name} not found")
+            raise Exception(f"Failed to trigger rolling update: {e.reason}")
+
     def _deployment_to_dict(self, deployment: client.V1Deployment) -> Dict[str, Any]:
         """Convert Kubernetes deployment to dictionary"""
         status = deployment.status
@@ -447,6 +477,43 @@ class KubernetesService:
             }
         except ApiException as e:
             raise Exception(f"Failed to update secret: {e.reason}")
+
+    def list_secrets(self, namespace: str = "default", label_selector: Optional[str] = None) -> List[Dict[str, Any]]:
+        """List secrets in a namespace"""
+        self.ensure_connected()
+        
+        try:
+            secrets_list = self._core_v1.list_namespaced_secret(
+                namespace=namespace,
+                label_selector=label_selector
+            )
+            
+            return [
+                {
+                    "name": secret.metadata.name,
+                    "namespace": secret.metadata.namespace,
+                    "type": secret.type,
+                    "keys": list(secret.data.keys()) if secret.data else [],
+                    "created_at": secret.metadata.creation_timestamp.isoformat() if secret.metadata.creation_timestamp else None
+                }
+                for secret in secrets_list.items
+            ]
+        except ApiException as e:
+            raise Exception(f"Failed to list secrets: {e.reason}")
+
+    def delete_secret(self, name: str, namespace: str = "default") -> bool:
+        """Delete a Kubernetes secret"""
+        self.ensure_connected()
+        
+        try:
+            self._core_v1.delete_namespaced_secret(name=name, namespace=namespace)
+            logger.info(f"Deleted secret {name} from namespace {namespace}")
+            return True
+        except ApiException as e:
+            if e.status == 404:
+                logger.warning(f"Secret {name} not found")
+                return False
+            raise Exception(f"Failed to delete secret: {e.reason}")
 
     # Pod and log operations
     def get_pods(self, namespace: str = "default", label_selector: Optional[str] = None) -> List[Dict[str, Any]]:
