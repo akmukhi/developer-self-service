@@ -69,3 +69,87 @@ export interface Secret {
   metadata?: Record<string, any>
 }
 
+// Request types
+export interface ServiceCreateRequest {
+  name: string
+  image: string
+  replicas?: number
+  namespace?: string
+  resources?: {
+    cpu?: string
+    memory?: string
+  }
+  env_vars?: Record<string, string>
+  ports?: number[]
+}
+
+export interface EnvironmentCreateRequest {
+  name: string
+  ttl_hours?: number
+  namespace?: string
+  services?: string[]
+  labels?: Record<string, string>
+}
+
+export interface SecretRotateRequest {
+  keys?: string[]
+  generate_new?: boolean
+  update_deployments?: boolean
+}
+
+// Response types for observability
+export interface LogsResponse {
+  service_id: string
+  namespace: string
+  deployment: string
+  pods: Array<{
+    pod: string
+    status?: string
+    ready?: boolean
+    logs: string
+    lines: number
+    error?: string
+  }>
+  total_pods: number
+  total_lines: number
+  retrieved_at: string
+}
+
+export interface MetricsResponse {
+  service_id: string
+  namespace: string
+  pods: Array<{
+    pod: string
+    cpu: number
+    memory: number
+    containers?: Array<{
+      container: string
+      cpu: { usage: number; usage_raw: string }
+      memory: { usage: number; usage_raw: string }
+    }>
+  }>
+  aggregated: {
+    total_cpu: string
+    total_memory: string
+    average_cpu?: string
+    average_memory?: string
+    pod_count: number
+  }
+  retrieved_at: string
+}
+
+export interface LogStatistics {
+  total_pods: number
+  total_lines: number
+  error_count: number
+  warning_count: number
+  info_count: number
+  pod_stats: Array<{
+    pod: string
+    lines: number
+    errors: number
+    warnings: number
+    info: number
+  }>
+}
+
