@@ -4,7 +4,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: developer-self-service-backend
     ports:
       - "8000:8000"
