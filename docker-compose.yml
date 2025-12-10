@@ -27,7 +27,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: developer-self-service-frontend
     ports:
       - "5173:5173"
