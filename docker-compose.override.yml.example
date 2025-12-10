@@ -1,0 +1,20 @@
+# Example override file for local development
+# Copy this to docker-compose.override.yml and customize as needed
+
+version: '3.8'
+
+services:
+  backend:
+    # Mount kubeconfig for Kubernetes access
+    volumes:
+      - ${HOME}/.kube/config:/app/.kube/config:ro
+    # Add environment variables
+    environment:
+      - LOG_LEVEL=DEBUG
+      - TERRAFORM_BINARY=terraform
+
+  frontend:
+    # Override API URL if needed
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+
