@@ -88,29 +88,23 @@ npm run dev
 
 ## Kubernetes Setup
 
-The portal requires access to a Kubernetes cluster. For local development:
+The portal requires access to a Kubernetes cluster. For local development, see the detailed guide:
 
-### Using minikube
+📖 **[Local Kubernetes Setup Guide](docs/LOCAL_K8S_SETUP.md)** - Complete instructions for minikube and kind
 
+### Quick Start
+
+**minikube:**
 ```bash
-# Start minikube
-minikube start
-
-# Configure kubectl
-kubectl config use-context minikube
-
-# Verify connection
-kubectl cluster-info
+minikube start --memory=4096 --cpus=2
+minikube addons enable ingress
+minikube addons enable metrics-server
 ```
 
-### Using kind
-
+**kind:**
 ```bash
-# Create cluster
-kind create cluster --name dev-portal
-
-# Verify connection
-kubectl cluster-info
+kind create cluster --name developer-portal
+# See docs/LOCAL_K8S_SETUP.md for ingress and metrics setup
 ```
 
 ### Mounting kubeconfig in Docker
