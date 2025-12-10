@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: developer-self-service-config
+  namespace: default
+  labels:
+    managed-by: developer-self-service
+data:
+  log_level: "INFO"
+  terraform_binary: "terraform"
+  api_base_url: "http://developer-self-service-backend:8000/api"
+

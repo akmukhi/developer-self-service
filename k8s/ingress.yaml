@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: developer-self-service-ingress
+  namespace: default
+  labels:
+    managed-by: developer-self-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: developer-portal.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: developer-self-service-frontend
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: developer-self-service-backend
+            port:
+              number: 8000
+  # Uncomment for TLS
+  # tls:
+  # - hosts:
+  #   - developer-portal.local
+  #   secretName: developer-portal-tls
+
